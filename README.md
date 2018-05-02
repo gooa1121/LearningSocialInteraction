@@ -17,5 +17,11 @@ Directly run GroupVoting.ipynb.
 SALSA Dataset: http://tev.fbk.eu/salsa
 
 ###Results
-![view1](./results_social_img/GTffResults_cam0_fid0.png)
-![view1](./results_social_img/GTffResults_cam1_fid0.png)
+View1
+<img src="./results_social_img/GTffResults_cam0_fid0.png" alt="View1" width="400px"/>
+View2
+<img src="./results_social_img/GTffResults_cam1_fid0.png" alt="View2" width="400px"/>
+View3
+<img src="./results_social_img/GTffResults_cam2_fid0.png" alt="View3" width="400px"/>
+View4
+<img src="./results_social_img/GTffResults_cam3_fid0.png" alt="View4" width="400px"/>
