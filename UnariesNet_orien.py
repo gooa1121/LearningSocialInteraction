@@ -108,15 +108,7 @@ class unariesNet:
         ## Classification
         # loss = -(log_p_out[:,0]*Ybb + log_p_out[:,1]*(1-Ybb)).mean()
         loss_bbox = -(log_p_out[:,0]*Ybb + log_p_out[:,1]*(1-Ybb)).mean()
-        ## norm2
-        # loss_body = (Ybb*(Ybody-rad_out[:,0])*(Ybody-rad_out[:,0])).mean()
-        # loss_head = (Ybb*(Yhead-rad_out[:,1])*(Yhead-rad_out[:,1])).mean()
-        ## norm1 
-        # loss_body = (Ybb*abs(Ybody-rad_out[:,0])).mean()
-        # loss_head = (Ybb*abs(Yhead-rad_out[:,1])).mean()
-        ## norm1 with precise weight
-        # loss_body = (Ybb*abs(Ybody-rad_out[:,0])).sum()/Ybb.sum()
-        # loss_head = (Ybb*abs(Yhead-rad_out[:,1])).sum()/Ybb.sum()
+
         unit = 1.0
         est_body_orienX = unit*np.cos(rad_out[:,0])# x on th unit circle
         est_body_orienY = unit*np.sin(rad_out[:,0])# y on th unit circle
@@ -137,8 +129,8 @@ class unariesNet:
         loss_body = (Ybb*cost_body).sum()/Ybb.sum()
         loss_head = (Ybb*cost_head).sum()/Ybb.sum()
         
-        lambda1 = 0.5
-        lambda2 = 0.5
+        lambda1 = 0.3
+        lambda2 = 0.3
         # print loss_bbox, loss_head, loss_body
         loss = loss_bbox + lambda1*loss_body + lambda2*loss_head
 
@@ -222,8 +214,6 @@ class unariesNet:
 
 
         #load the orientation ground truth
-        # self.GT_bodys = np.load('./GT_orien/GT_body_proj.npy')
-        # self.GT_heads = np.load('./GT_orien/GT_head_proj.npy')
         self.GT_bodys = np.load('./GT_orien/GT_body_camSpace.npy')
         self.GT_heads = np.load('./GT_orien/GT_head_camSpace.npy')
         for epoch in range(resume_epoch,80):
@@ -405,10 +395,6 @@ class unariesNet:
         rois_np,indices_no_null = self.get_rois(fid,cam)
         x = self.get_rgb(fid,cam)
         labels, labels_body, labels_head = self.get_labels(Config.img_index_list[fid],cam,indices_no_null)
-        # print 'label unique after get label=',np.unique(labels)
-        # print 'labels.shape', labels.shape
-        # print 'body shape', labels_body.shape
-        # print 'head shape', labels_head.shape 
 
         #We resample in order to have the same number of positive and negative examples
         if sample_equal:
@@ -431,10 +417,6 @@ class unariesNet:
             labels = labels[np.array(select)]
             labels_body = labels_body[np.array(select)]
             labels_head = labels_head[np.array(select)]
-        # print 'labels.shape', labels.shape
-        # print 'body shape', labels_body.shape
-        # print 'head shape', labels_head.shape 
-        # print 'label unique in load batch=',np.unique(labels)
         return x,rois_np,labels, labels_body, labels_head
 
     def load_batch_run(self,fid,cam):
@@ -456,58 +438,6 @@ class unariesNet:
 
         # plt.imshow(rgb)
         # plt.show()
-        return rgb
-     
-    #draw both GT and estimated orientation
-    def visualize_positives(self,x,rois_np,labels,body_labels, head_labels,estimate_rad, i=0, cam=0, CNN_factor = 4):
-        import copy
-        rgb = copy.copy(x[0].transpose((1,2,0)))
-    
-        for idbb, bbox in enumerate(rois_np.tolist()[:]):
-            # print idbb, bbox
-            # print 'score:', labels[idbb]
-            color = (255,0,0)
-            if labels[idbb][0]>0.5:
-                
-                bbox = np.asarray(bbox).astype(np.int)
-                cv2.rectangle(rgb,(Config.CNN_factor*bbox[1],Config.CNN_factor*bbox[2]),
-                              (Config.CNN_factor*bbox[3],Config.CNN_factor*bbox[4]),color,2)
-                gp_x = (Config.CNN_factor*bbox[1] + Config.CNN_factor*bbox[3])*0.5
-                gp_y = Config.CNN_factor*bbox[4]
-                cv2.circle(rgb, (int(gp_x), int(gp_y)), 5, (0,255,0), -2)
-                #draw GT orientation
-                if body_labels[idbb]<-5:
-                    length = 50
-                    angle_b = body_labels[idbb]
-                    x2_b = int(gp_x + length * math.cos(angle_b))
-                    y2_b = int(gp_y + length * math.sin(angle_b))
-                    cv2.arrowedLine(rgb, (int(gp_x), int(gp_y)), (x2_b, y2_b), (0, 255, 0), 2)
-                    
-                    length = 30
-                    angle_h = head_labels[idbb]
-                    x2_h = int(gp_x + length * math.cos(angle_h))
-                    y2_h = int(gp_y + length * math.sin(angle_h))
-                    cv2.arrowedLine(rgb, (int(gp_x), int(gp_y)), (x2_h, y2_h), (0, 255, 255), 2)
-                    #draw estimated orientation
-                    length = 30
-                    eh = estimate_rad[idbb,1]#0 body, 1 head
-                    x2_eh = int(gp_x + length * math.cos(eh))
-                    y2_eh = int(gp_y + length * math.sin(eh))
-                    cv2.arrowedLine(rgb, (int(gp_x), int(gp_y)), (x2_eh, y2_eh), (255, 0, 255), 2)
-                    
-                    length = 50
-                    eb = estimate_rad[idbb,0]#0 body, 1 head
-                    x2_eb = int(gp_x + length * math.cos(eb))
-                    y2_eb = int(gp_y + length * math.sin(eb))
-                    # print eh+eb
-
-                    cv2.arrowedLine(rgb, (int(gp_x), int(gp_y)), (x2_eb, y2_eb), (0, 0, 255), 2)
-                    # cv2.addWeighted(overlay, 0.5, rgb, 0.5, 0, rgb)
-        
-        # plt.figure(figsize=(10,10))
-        # plt.imshow(rgb)
-        # plt.show()
-        # plt.imsave('result_orien/cam%d_fid%d.png'%(cam,i), rgb)
         return rgb
     
     #draw estimated orientation with angles input corresponding to RoI
@@ -628,30 +558,6 @@ class unariesNet:
             np.save(self.unaries_out_path%Config.img_index_list[fid],scores)
             if save_features:
                 np.save(Config.unaries_path_features%Config.img_index_list[fid],features)
-    
-    # def check_potentials(self, fid, cam, npy_file, mode=1):
-    #     n_bboxes = self.room.templates_array.shape[1]
-    #     x,rois_np,indices_no_null= self.load_batch_run(fid,cam)
-    #     print 'roi shape = ', rois_np.shape,', indices shape = ',indices_no_null.shape
-    #     stored_score = np.load(npy_file)
-    #     #view the result of single cam
-    #     if mode<=1:
-    #         unaries_E = -1*stored_score[cam,:]
-    #         unaries = unaries_E.clip(0.1,2)*2.0
-    #     #view the result of multi cam
-    #     else:
-    #         unaries_E = -1*stored_score
-    #         unaries = unaries_E.clip(0.1,2).min(axis = 0)*2.0
-    #     score = np.exp(-1*unaries)
-    #     print 'score max = ', score.max(), 'min = ', score.min()
-    #     print 'score shape ',score.shape
-    #     outImg = self.visualize_positives(x,rois_np,score[indices_no_null], fid, cam)
-    #     saveImg = np.zeros((outImg.shape))
-    #     saveImg[:,:,0] = outImg[:,:,2]
-    #     saveImg[:,:,1] = outImg[:,:,1]
-    #     saveImg[:,:,2] = outImg[:,:,0]
-    #     # print 'save Img:' + './debug_img/'+npy_file[-10:-3]+'png'
-    #     # cv2.imwrite('./debug_img/'+npy_file[-10:-3]+'png',saveImg)
 
     def run_features(self,fid = 0, cam =0):
         x,rois_np,l= self.load_batch_run(fid,cam)
