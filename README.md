@@ -18,4 +18,8 @@ SALSA Dataset: http://tev.fbk.eu/salsa
 
 ### Results
 
+Using GT positions and orientations
 <img src="./results_social_img/GTffResults_cam0_fid0.png" alt="View1" width="400px"/><img src="./results_social_img/GTffResults_cam1_fid0.png" alt="View2" width="400px"/><img src="./results_social_img/GTffResults_cam2_fid0.png" alt="View3" width="400px"/><img src="./results_social_img/GTffResults_cam3_fid0.png" alt="View4" width="400px"/>
+
+Using estimated positions and orientations
+<img src="./results_social_img/allResults_cam0_fid0.png" alt="r1" width="400px"/><img src="./results_social_img/allResults_cam1_fid0.png" alt="r2" width="400px"/><img src="./results_social_img/allResults_cam2_fid0.png" alt="r3" width="400px"/><img src="./results_social_img/allResults_cam3_fid0.png" alt="r4" width="400px"/>
