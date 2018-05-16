@@ -8,7 +8,7 @@ import os
 from PIL import Image
 
 from pom_room import POM_room
-import Config_orien as Config
+import Config
 import copy
 
 def createMap(pts_list): # a list of several lists of points
@@ -51,8 +51,7 @@ def drawLinesOnGround(pts, end_pts_List, scale):
             p = p.astype(int)
             ep = ep.astype(int)
             cv2.circle(ground, (p[0], p[1]), 1, (255,0,0), -1)
-
-            cv2.line(ground, (p[0], p[1]), (ep[0], ep[1]), (180, 0, 0), 1)
+            cv2.arrowedLine(ground, (p[0], p[1]), (ep[0], ep[1]), (180, 0, 0), 1)
             cv2.putText(ground,str(idx+1),(p[0], p[1]), cv2.FONT_HERSHEY_PLAIN, 0.5,(100,0,0), thickness = 1)
     return ground, pos_pts_shift, end_pts_shift
 
@@ -77,7 +76,6 @@ def drawLinesInImg(pts, pts2, in_img, lineColor, text=True):
 
         x2_b = int(pt2[0])
         y2_b = int(pt2[1])
-
         cv2.arrowedLine(img, (x,y), (x2_b, y2_b), lineColor, 2)
     return img
 
